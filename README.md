@@ -1,4 +1,4 @@
-# LTPhotoAlbum
+# LTPhotoAlbum (.NET Core 3.1)
 Clint Morse - September 14th, 2021
 
 Building and running the application:
