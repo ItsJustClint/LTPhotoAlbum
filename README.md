@@ -2,6 +2,7 @@
 Clint Morse - September 14th, 2021
 
 Building and running the application:
+  - Copy appsettings.json from project folder to debug or release folder.  This would ideally be handled in the pipeline yaml file during build.
   - Navigate to LTPhotoAlbum project directory:
     - ```cd LTPhotoAlbum```
   - Use dotnet to build the project:
@@ -18,6 +19,7 @@ Building and running the application:
     - exit - Closes application
 
 Building and running included unit tests:
+  - Copy appsettings.json from test project folder to debug or release folder.  This would ideally be handled in the pipeline yaml file during build.
   - Navigate to the LTPhotoAlbums.Test project directory:
     - ```cd LTPhotoAlbum.Test```
   - Use dotnet to build the project:
