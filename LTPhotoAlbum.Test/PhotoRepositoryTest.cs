@@ -8,6 +8,7 @@ using AutoFixture.AutoMoq;
 using LTPhotoAlbum.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+// You imported Moq here, but didn't use it.  I THINK though... given feedback below, you may want to use it now.  :)  HINT!
 using Moq;
 using Xunit;
 
@@ -15,6 +16,9 @@ namespace LTPhotoAlbum.Test
 {
     public class PhotoRepositoryTest : UnitTestBase
     {
+        // Note:  Does it make sense to perhaps test what happens when we get an error or timeout back from the webservice?
+        // If we're not hitting the actual service in our test, we can simulate the failure coming back and then test our
+        // error handling.  :)
         private readonly Fixture _fixture;
         private readonly Random _random;
         private readonly PhotoRepository _photoRepository;
@@ -37,6 +41,10 @@ namespace LTPhotoAlbum.Test
         [Fact]
         public async void PhotosReturnedAsync()
         {
+            // NOTE: This function seems to be acting as an integration test as opposed to a unit test;
+            // the GetPhotosAsync function here is making the actual service call out to the web.  You may want to
+            // avoid that, such that your test is deterministic and isolated to the functionality within your own
+            // "unit" of logic instead of testing the webservice.  This is for all your calls in this class.
             List<PhotoDto> photos = (List<PhotoDto>) await _photoRepository.GetPhotosAsync(null);
 
             Assert.True(photos.Count > 0);

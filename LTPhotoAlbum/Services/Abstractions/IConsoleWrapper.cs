@@ -4,6 +4,7 @@ using System.Text;
 
 namespace LTPhotoAlbum.Services.Abstractions
 {
+    // Do we need this interface for something?
     public interface IConsoleWrapper
     {
         public void ConsoleClear() { }
