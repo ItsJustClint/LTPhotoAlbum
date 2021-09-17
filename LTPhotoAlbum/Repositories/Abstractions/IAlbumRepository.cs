@@ -3,10 +3,10 @@ using System.Threading.Tasks;
 
 namespace LTPhotoAlbum.Repositories.Abstractions
 {
-    public interface IPhotoRepository
+    public interface IAlbumRepository
     {
 
-        public Task<IEnumerable<PhotoDto>> GetPhotosAsync(int? albumId);
+        public Task<IEnumerable<int>> GetAlbumIdsAsync();
 
     }
 }

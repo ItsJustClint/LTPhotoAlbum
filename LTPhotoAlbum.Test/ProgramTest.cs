@@ -1,10 +1,8 @@
-using LTPhotoAlbum.Repositories;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using AutoFixture;
+using AutoFixture.AutoMoq;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
+using System.Linq;
 using Xunit;
 
 namespace LTPhotoAlbum.Test
@@ -13,42 +11,44 @@ namespace LTPhotoAlbum.Test
     {
 
         private readonly Random _random;
-        private readonly PhotoRepository _photoRepository;
+        private readonly IEnumerable<int> _albumIds;
 
         public ProgramTest()
         {
+            Fixture fixture = (Fixture)new Fixture().Customize(new AutoMoqCustomization());
+
             _random = new Random();
-             
-            IServiceCollection services = new ServiceCollection();
 
-            services.AddHttpClient();
-
-            _photoRepository = new PhotoRepository(new ConfigurationBuilder()
-                .SetBasePath(Directory.GetParent(AppContext.BaseDirectory).FullName)
-                .AddJsonFile("appsettings.json")
-                .Build(), services.BuildServiceProvider().GetService<IHttpClientFactory>());
+            _albumIds = fixture.CreateMany<int>();
         }
 
         [Fact]
-        public async void ValidAblumIdAsync()
+        public void ValidAblumId()
         {
-            int albumId = _random.Next(1, 100);
+            int indexToUse = _random.Next(1, 3);
 
-            Assert.True(string.IsNullOrEmpty(Program.IsValidAlbumId(albumId.ToString(), (List<int>)await _photoRepository.GetAlbumIdsAsync())));
+            int albumId = _albumIds.ElementAt(indexToUse);
+
+            Assert.True(string.IsNullOrEmpty(Program.ValidateAlbumId(albumId.ToString(), _albumIds.ToList())));
         }
 
         [Fact]
-        public async void InvalidAlbumId_NumericAsync()
+        public void InvalidAlbumId_Numeric()
         {
-            int albumId = _random.Next(101, 1000);
+            int albumId = _random.Next();
 
-            Assert.False(string.IsNullOrEmpty(Program.IsValidAlbumId(albumId.ToString(), (List<int>)await _photoRepository.GetAlbumIdsAsync())));
+            while (_albumIds.Any(a => a == albumId))
+            {
+                albumId = _random.Next();
+            }
+
+            Assert.False(string.IsNullOrEmpty(Program.ValidateAlbumId(albumId.ToString(), _albumIds.ToList())));
         }
 
         [Fact]
-        public async void InvalidAlbumId_NonNumericAsync()
+        public void InvalidAlbumId_NonNumeric()
         {
-            Assert.False(string.IsNullOrEmpty(Program.IsValidAlbumId("InvalidAlbumId", (List<int>)await _photoRepository.GetAlbumIdsAsync())));
+            Assert.False(string.IsNullOrEmpty(Program.ValidateAlbumId("InvalidAlbumId", _albumIds.ToList())));
         }
     }
 }

@@ -11,89 +11,101 @@ namespace LTPhotoAlbum
     {
         public static async Task Main(string[] args)
         {
-
-            var services = StartUp.ConfigureServices();
-            var serviceProvider = services.BuildServiceProvider();
-            string consoleFeedback;
-
-            ShowLaunchDisplay(); 
-
-            consoleFeedback = Console.ReadLine().ToLower().Trim();
-
-            while (consoleFeedback != "exit")
+            try
             {
-                switch (consoleFeedback)
-                {
-                    case "home":
-                        ShowLaunchDisplay();
+                var services = StartUp.ConfigureServices();
+                var serviceProvider = services.BuildServiceProvider();
+                string consoleFeedback;
 
-                        break;
-                    case "album":
-                        var albumService = serviceProvider.GetService<IPhotoRepository>();
-
-                        if (albumService == null)
-                        {
-                            throw new Exception("Couldn't find application service to run");
-                        }
-
-                        IEnumerable<int> albums = await albumService.GetAlbumIdsAsync();
-
-                        albums.ToList().ForEach(r =>
-                        {
-                            Console.WriteLine($"{r}");
-                        });
-
-                        ShowOptions();
-
-                        break;
-                    case "photo":
-                        var photoService = serviceProvider.GetService<IPhotoRepository>();
-
-                        if (photoService == null)
-                        {
-                            throw new Exception("Couldn't find application service to run");
-                        }
-
-                        Console.WriteLine("Please enter an album id to search for and hit enter to continue.");
-
-                        var albumId = Console.ReadLine();
-                        var albumValidation = IsValidAlbumId(albumId, (await photoService.GetAlbumIdsAsync()).ToList());
-
-                        if (string.IsNullOrEmpty(albumValidation))
-                        {
-                            List<PhotoDto> photos = (await photoService.GetPhotosAsync(int.Parse(albumId))).ToList();
-
-                            photos.ForEach(r =>
-                            {
-                                Console.WriteLine(r.ToString());
-                            });
-
-                            Program.ShowOptions();
-                        }
-                        else
-                        {
-                            Console.WriteLine(albumValidation);
-                            Console.WriteLine("Press enter to continue.");
-                            Console.ReadLine();
-
-                            ShowLaunchDisplay();
-                        }
-
-                        break;
-                    case "help":
-                        ShowOptions();
-
-                        break;
-                    case "exit":
-                        break;
-                    default:
-                        Console.WriteLine("Invalid option entered.  Please see list and enter a new option.");
-                        ShowOptions();
-
-                        break;
-                }
+                ShowLaunchDisplay();
 
                 consoleFeedback = Console.ReadLine().ToLower().Trim();
+
+                var photoService = serviceProvider.GetService<IPhotoRepository>();
+                var albumService = serviceProvider.GetService<IAlbumRepository>();
+
+                while (consoleFeedback != "exit")
+                {
+                    switch (consoleFeedback)
+                    {
+                        case "home":
+                            ShowLaunchDisplay();
+
+                            break;
+                        case "album":
+
+                            if (albumService == null)
+                            {
+                                throw new Exception("Couldn't find application service to run");
+                            }
+
+                            IEnumerable<int> albums = await albumService.GetAlbumIdsAsync();
+
+                            albums.ToList().ForEach(r =>
+                            {
+                                Console.WriteLine($"{r}");
+                            });
+
+                            ShowOptions();
+
+                            break;
+                        case "photo":
+
+                            if (photoService == null || albumService == null)
+                            {
+                                throw new Exception("Couldn't find photo or album service to run");
+                            }
+
+                            Console.WriteLine("Please enter an album id to search for and hit enter to continue.");
+
+                            var albumId = Console.ReadLine();
+                            var albumValidation = ValidateAlbumId(albumId, (await albumService.GetAlbumIdsAsync()).ToList());
+
+                            if (string.IsNullOrEmpty(albumValidation))
+                            {
+                                List<PhotoDto> photos = (await photoService.GetPhotosAsync(int.Parse(albumId))).ToList();
+
+                                photos.ForEach(r =>
+                                {
+                                    Console.WriteLine(r.ToString());
+                                });
+
+                                Program.ShowOptions();
+                            }
+                            else
+                            {
+                                Console.WriteLine(albumValidation);
+                                Console.WriteLine("Press enter to continue.");
+                                Console.ReadLine();
+
+                                ShowLaunchDisplay();
+                            }
+
+                            break;
+                        case "help":
+                            ShowOptions();
+
+                            break;
+                        case "exit":
+                            break;
+                        default:
+                            Console.WriteLine("Invalid option entered.  Please see list and enter a new option.");
+                            ShowOptions();
+
+                            break;
+                    }
+
+                    consoleFeedback = Console.ReadLine().ToLower().Trim();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine();
+                Console.WriteLine("Above error is causing the application to close.  Press any button to exit.");
+                Console.ReadLine();
+
+                Environment.Exit(1);
             }
         }
 
@@ -121,7 +133,7 @@ namespace LTPhotoAlbum
             Console.WriteLine("exit - Closes application");
         }
 
-        public static string IsValidAlbumId(string albumId, List<int> allAlbums)
+        public static string ValidateAlbumId(string albumId, List<int> allAlbums)
         {
             string message = string.Empty;
 
