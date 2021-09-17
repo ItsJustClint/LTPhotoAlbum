@@ -18,7 +18,9 @@ namespace LTPhotoAlbum
             _config = LoadConfiguration();
             services.AddSingleton(_config);
             services.AddHttpClient();
+            services.AddTransient<IPhotoAlbumDataRepository, PhotoAlbumDataRepository>();
             services.AddTransient<IPhotoRepository, PhotoRepository>();
+            services.AddTransient<IAlbumRepository, AlbumRepository>();
 
             return services;
         }
