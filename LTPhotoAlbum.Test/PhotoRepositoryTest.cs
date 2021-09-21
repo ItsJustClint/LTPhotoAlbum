@@ -1,5 +1,6 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoMoq;
+using LTPhotoAlbum.Repositories;
 using LTPhotoAlbum.Repositories.Abstractions;
 using Moq;
 using System;
@@ -12,7 +13,8 @@ namespace LTPhotoAlbum.Test
     public class PhotoRepositoryTest
     {
         private readonly Random _random;
-        private readonly Mock<IPhotoRepository> _mockPhotoRepository;
+        private readonly Mock<IPhotoAlbumDataRepository> _mockRepo;
+        private readonly PhotoRepository _photoRepository;
         private readonly IEnumerable<PhotoDto> _serviceRecords;
 
         public PhotoRepositoryTest()
@@ -23,15 +25,16 @@ namespace LTPhotoAlbum.Test
 
             _serviceRecords = fixture.CreateMany<PhotoDto>();
 
-            _mockPhotoRepository = new Mock<IPhotoRepository>();
+            _mockRepo = new Mock<IPhotoAlbumDataRepository>();
+            _photoRepository = new PhotoRepository(_mockRepo.Object);
         }
 
         [Fact]
         public async void PhotosReturnedAsync()
         {
-            _mockPhotoRepository.Setup(s => s.GetPhotosAsync(null)).ReturnsAsync(_serviceRecords);
+            _mockRepo.Setup(s => s.GetDataAsync(null)).ReturnsAsync(_serviceRecords);
 
-            IEnumerable<PhotoDto> photos = await _mockPhotoRepository.Object.GetPhotosAsync(null);
+            var photos = await _photoRepository.GetPhotosAsync(null);
 
             Assert.NotEmpty(photos);
         }
@@ -39,9 +42,9 @@ namespace LTPhotoAlbum.Test
         [Fact]
         public async void OutputMatchesExpectedAsync()
         {
-            _mockPhotoRepository.Setup(s => s.GetPhotosAsync(null)).ReturnsAsync(_serviceRecords);
+            _mockRepo.Setup(s => s.GetDataAsync(null)).ReturnsAsync(_serviceRecords);
 
-            IEnumerable<PhotoDto> photos = await _mockPhotoRepository.Object.GetPhotosAsync(null);
+            var photos = await _photoRepository.GetPhotosAsync(null);
 
             Assert.Equal(_serviceRecords, photos);
         }
@@ -56,9 +59,9 @@ namespace LTPhotoAlbum.Test
                 albumId = _random.Next();
             }
 
-            _mockPhotoRepository.Setup(s => s.GetPhotosAsync(albumId)).ReturnsAsync(_serviceRecords.Where(w => w.AlbumId == albumId));
+            _mockRepo.Setup(s => s.GetDataAsync(albumId)).ReturnsAsync(_serviceRecords.Where(w => w.AlbumId == albumId));
 
-            IEnumerable<PhotoDto> photos = await _mockPhotoRepository.Object.GetPhotosAsync(albumId);
+            var photos = await _photoRepository.GetPhotosAsync(albumId);
 
             Assert.Empty(photos);
         }
@@ -70,9 +73,9 @@ namespace LTPhotoAlbum.Test
 
             int albumId = _serviceRecords.ElementAt(indexToUse).AlbumId;
 
-            _mockPhotoRepository.Setup(s => s.GetPhotosAsync(albumId)).ReturnsAsync(_serviceRecords.Where(w => w.AlbumId == albumId));
+            _mockRepo.Setup(s => s.GetDataAsync(albumId)).ReturnsAsync(_serviceRecords.Where(w => w.AlbumId == albumId));
 
-            IEnumerable<PhotoDto> photos = await _mockPhotoRepository.Object.GetPhotosAsync(albumId);
+            var photos = await _photoRepository.GetPhotosAsync(albumId);
 
             Assert.DoesNotContain(photos, a => a.AlbumId != albumId);
         }
