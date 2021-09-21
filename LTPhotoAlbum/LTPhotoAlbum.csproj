@@ -6,7 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="bin\Debug\netcoreapp3.1\appsettings.json" />
+    <!-- You should not reference anything in the bin/ folder as its contents should be genereated and ignored by source control -->
+    <None Update="appsettings.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

@@ -15,16 +15,18 @@ namespace LTPhotoAlbum
             {
                 var services = StartUp.ConfigureServices();
                 var serviceProvider = services.BuildServiceProvider();
-                string consoleFeedback;
+                string consoleFeedback; // an example of where var won't work
 
                 ShowLaunchDisplay();
 
+                // At one point you have the shell of a ConsoleWrapper. It would have been interesting to see that used.
                 consoleFeedback = Console.ReadLine().ToLower().Trim();
 
                 var photoService = serviceProvider.GetService<IPhotoRepository>();
                 var albumService = serviceProvider.GetService<IAlbumRepository>();
 
-                while (consoleFeedback != "exit")
+                // I think it is nice to see the condition explained in the while statement
+                while (consoleFeedback != "exit") 
                 {
                     switch (consoleFeedback)
                     {
@@ -33,21 +35,8 @@ namespace LTPhotoAlbum
 
                             break;
                         case "album":
-
-                            if (albumService == null)
-                            {
-                                throw new Exception("Couldn't find application service to run");
-                            }
-
-                            IEnumerable<int> albums = await albumService.GetAlbumIdsAsync();
-
-                            albums.ToList().ForEach(r =>
-                            {
-                                Console.WriteLine($"{r}");
-                            });
-
-                            ShowOptions();
-
+                            AlbumStuff(albumService);
+                            
                             break;
                         case "photo":
 
@@ -63,7 +52,7 @@ namespace LTPhotoAlbum
 
                             if (string.IsNullOrEmpty(albumValidation))
                             {
-                                List<PhotoDto> photos = (await photoService.GetPhotosAsync(int.Parse(albumId))).ToList();
+                                var photos = (await photoService.GetPhotosAsync(int.Parse(albumId))).ToList();
 
                                 photos.ForEach(r =>
                                 {
@@ -109,6 +98,23 @@ namespace LTPhotoAlbum
             }
         }
 
+        public static async void AlbumStuff(IAlbumRepository albumService)
+        {
+            if (albumService == null)
+            {
+                throw new Exception("Couldn't find application service to run");
+            }
+
+            var albums = await albumService.GetAlbumIdsAsync();
+
+            albums.ToList().ForEach(r =>
+            {
+                Console.WriteLine($"{r}");
+            });
+
+            ShowOptions();
+        }
+
         public static void ShowLaunchDisplay()
         {
             Console.Clear();
@@ -135,7 +141,7 @@ namespace LTPhotoAlbum
 
         public static string ValidateAlbumId(string albumId, List<int> allAlbums)
         {
-            string message = string.Empty;
+            var message = string.Empty;
 
             if (int.TryParse(albumId, out int _albumId))
             {

@@ -1,0 +1,87 @@
+#+TITLE: Showcase Feedback
+
+* Disclaimer
+  Throughout this review I will talk about the things that jump out to me. Typically this means the things that seem
+  off. Because of that, the review may seem more harsh than it really is. I will try to mention what I like as well,
+  however, those things don't jump out as much when reviewing.
+
+  I Will also be providing this feedback as a PR. Some information will be provided in the comments around the changes.
+  For the ideas that need more explanation, I will provide that in this file. 
+
+* General
+  - appsettings.json ::
+    You referenced the appsettings in your bin folder. The issue here is that that file will never be there when you
+    (or your CI/CD pipeline) pull the project down. This means that for that new machine the project will never build
+    and run. The contents of the bin folder is entirely generated and as a result are typically ignored by git. You
+    likely never encountered this issue as you had the file on your machine and it never attempted to remove it.
+
+    In the newest versions of dotnet, this is made far simpler by having the appsetting.json included by default.
+    However, with the frameword you targeted, that isn't the case. You may want to try deleting the repo and pulling
+    it down every now and then to make sure that the project will still function the way you think.
+
+  - inconsitent use of var ::
+    This is something of a personal pet peeve. When I see a code base use var and explicit typings it makes the code
+    base feel more patchwork then it should. It makes it feel as though multiple people are slamming code into the repo
+    (or that something was straight copy/pasted from SO) without being adjusted to match the style of the code base.
+
+    There are times where explicit typing is needed. However, many of the cases in this repo could use var without
+    consequences.
+    
+* Application
+** Program.cs
+   - Large Case Statment ::
+     In most cases you should try to avoid a lot of logic in case statement. If you do need to have some logic nested,
+     it is better to move that logic to a function and then call into it from the case statement. This helps to isolate
+     your logic and allow you to better test the individual components of your application.
+
+   - Static Functions ::
+     Static function can make testing rather difficult. Especially when you are attempting to mock dependencies to
+     isolate the testing of the function's logic.
+     
+   - Nested Function ::
+     In the 'ShowLaunchDisplay' function you call the 'ShowOptions' function. I would recommend avoiding having a
+     function call another function in the same class. The issue that you will encounter is testing. For this example,
+     it isn't too relevant as the internal function has an output you can also test. However, if you wanted to mock that
+     function dependency for the unit test, you would currently not be able to do that very well. As well as Main calls
+     all of the functions in this class which is perhaps a better example.
+
+** Abstractions
+   Personally, when the relationship is 1:1, I don't like when abstractions aren't in the same file as their
+   implementations. The problem that I find with the seperation is that shortcuts (like go to definition) become useless
+   and not require the developer to take extra steps to get to where they want to go.
+
+** StartUp
+   - Service Loading ::
+     I like the different uses of services. The use of Singleton and Transient in place where they seem to make since to
+     be use. Often I see people just use one type of service without thinking about if another may be a better fit.
+     
+* Tests
+** ProgramTest.cs
+   - Only testing ValidateAlbumId ::
+     The Program Main function has the majority of the logic that the application goes through. However, the only tests
+     against this file test the ValidateAlbumId function. My guess is that due to the many in class static function you
+     found that chuck of code difficult to test. If you are finding that something is difficult to test, it is likely
+     doing too many things and should be broken down into smaller parts.
+
+** PhotoRepositoryTest
+   - Mocking the Repository ::
+     For these tests, you mocked the repository you are trying to test. The way that this is setup, you wouldn't be
+     testing the repository. Instead you are testing the mocking library. What you want to do instead is mock the
+     dependency that the repository needs. You could change all of the logic in that function and never see those tests
+     fail.
+
+   - Good Coverage ::
+     Assuming that the mocking was wired up correctly, the tests have good coverage over the possible routes of the
+     function.
+
+** AlbumRepositoryTest
+   - Mocking the Repository ::
+     Same thing as above. This one I will leave unchanged.
+
+** PhotoAlbumDataRepositoryTest
+   - Mocking the Repository ::
+     Same thing as above. This one I will leave unchanged. This one has a lot more logic in it than the others. It would
+     be a good class to test with the dependencies mocked as shown in the PhotoRepositoryTest notes.
+
+     
+     
